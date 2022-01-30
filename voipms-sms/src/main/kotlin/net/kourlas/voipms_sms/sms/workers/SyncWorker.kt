@@ -237,25 +237,42 @@ class SyncWorker(context: Context, params: WorkerParameters) :
 
         // Create VoIP.ms API retrieval request for each of these periods
         // and for each DID
+        // and for SMS and MMS
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         sdf.timeZone = TimeZone.getTimeZone("America/New_York")
         for (period in periods) {
             encodedDids
-                .map {
-                    mapOf(
-                        "api_username" to getEmail(applicationContext),
-                        "api_password" to getPassword(applicationContext),
-                        "method" to "getSMS",
-                        "did" to it,
-                        "limit" to "1000000",
-                        "from" to sdf.format(period.first),
-                        "to" to sdf.format(period.second),
-                        "timezone" to "-5"
-                    ) // -5 corresponds to EDT
-                }
-                .mapTo(retrievalRequests) {
-                    RetrievalRequest(it, period)
-                }
+                    .map {
+                        mapOf(
+                                "api_username" to getEmail(applicationContext),
+                                "api_password" to getPassword(applicationContext),
+                                "method" to "getSMS",
+                                "did" to it,
+                                "limit" to "1000000",
+                                "from" to sdf.format(period.first),
+                                "to" to sdf.format(period.second),
+                                "timezone" to "-5"
+                        ) // -5 corresponds to EDT
+                    }
+                    .mapTo(retrievalRequests) {
+                        RetrievalRequest(it, period)
+                    }
+            encodedDids
+                    .map {
+                        mapOf(
+                                "api_username" to getEmail(applicationContext),
+                                "api_password" to getPassword(applicationContext),
+                                "method" to "getMMS",
+                                "did" to it,
+                                "limit" to "1000000",
+                                "from" to sdf.format(period.first),
+                                "to" to sdf.format(period.second),
+                                "timezone" to "-5"
+                        ) // -5 corresponds to EDT
+                    }
+                    .mapTo(retrievalRequests) {
+                        RetrievalRequest(it, period)
+                    }
         }
 
         return retrievalRequests
